@@ -1,8 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using SupportFlow.Data;
 using SupportFlow.Models;
-using System.ComponentModel;
+using SupportFlow.Services;
+
 
 namespace SupportFlow.Controllers
 {
@@ -10,73 +9,54 @@ namespace SupportFlow.Controllers
     [Route("api/Tickets")]//directly map to the route api/Tickets
     public class TicketsController : ControllerBase
     {
-        private readonly SupportFlowDbContext _context;
-        public TicketsController(SupportFlowDbContext context)
+        private readonly ITicketService _ticketService;
+        public TicketsController(ITicketService ticketService)
         {
-            _context = context;
+            _ticketService = ticketService;
         }
         [HttpGet] 
         public async Task<IActionResult> GetTickets()
         {
-            return Ok(await _context.Tickets.Include(t => t.User).Include(t => t.Category).ToListAsync());
+            return Ok(await _ticketService.GetTickets());
         }
         [HttpGet("{id}")]
         public async Task<IActionResult> GetTicketById(int id)
         {
-            var t = await _context.Tickets.Include(t => t.User).Include(t => t.Category).FirstOrDefaultAsync(t => t.Id == id);
-            if (t == null) return NotFound();
-            return Ok(t);
+            var ticket = await _ticketService.GetTicketById(id);
+            if (ticket == null) return NotFound();
+            return Ok(ticket);
         }
         [HttpPost]
         public async Task<IActionResult> AddTicket([FromBody]Ticket ticket)
         {
-            await _context.Tickets.AddAsync(ticket);
-            await _context.SaveChangesAsync();
-
-
-            return CreatedAtAction(nameof(GetTicketById),new { id = ticket.Id }, ticket);
+            var createdTicket = await _ticketService.AddTicket(ticket);
+            return CreatedAtAction(nameof(GetTicketById), new { id = createdTicket.Id }, createdTicket);
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateTicket(int id, [FromBody] Ticket ticket)
         {
-            var existingTicket = await _context.Tickets.FindAsync(id);
-            if (existingTicket == null)
+            var updatedTicket = await _ticketService.UpdateTicket(id, ticket);
+
+            if (updatedTicket == null)
             {
-                return NotFound($"Ticket item with ID {id} not found.");
+                return NotFound($"Ticket with ID {id} not found.");
             }
-
-            existingTicket.Title = ticket.Title;
-            existingTicket.User = ticket.User;
-            existingTicket.Category = ticket.Category;
-            existingTicket.Status = ticket.Status;
-            existingTicket.Priority = ticket.Priority;
-            existingTicket.Comments = ticket.Comments;
-
-            await _context.SaveChangesAsync();
-
-
-            return NoContent();
+            return Ok(updatedTicket);
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTicket(int id )
         {
-            var ticket = await _context.Tickets.FindAsync(id);
+            var deleted = await _ticketService.DeleteTicket(id);
 
-            
-            if (ticket == null)
+            if (!deleted)
             {
                 return NotFound($"Ticket with ID {id} not found.");
             }
-
             
-            _context.Tickets.Remove(ticket);
-            await _context.SaveChangesAsync();
 
-            
             return NoContent();
-
         }
 
 

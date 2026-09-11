@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SupportFlow.Data;
+using SupportFlow.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +15,7 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
     });
 
+builder.Services.AddScoped<ITicketService, TicketService>();
 
 builder.Services.AddEndpointsApiExplorer();
 
