@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using SupportFlow.Models;
+using SupportFlow.DTOs;
+
 using SupportFlow.Services;
 
 
@@ -27,22 +28,37 @@ namespace SupportFlow.Controllers
             return Ok(ticket);
         }
         [HttpPost]
-        public async Task<IActionResult> AddTicket([FromBody]Ticket ticket)
+        public async Task<IActionResult> AddTicket([FromBody] CreateTicketDto ticket)
         {
-            var createdTicket = await _ticketService.AddTicket(ticket);
-            return CreatedAtAction(nameof(GetTicketById), new { id = createdTicket.Id }, createdTicket);
+            try
+            {
+                var createdTicket = await _ticketService.AddTicket(ticket);
+                return CreatedAtAction(nameof(GetTicketById), new { id = createdTicket.Id }, createdTicket);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateTicket(int id, [FromBody] Ticket ticket)
+        public async Task<IActionResult> UpdateTicket(int id, [FromBody] UpdateTicketDto ticket)
         {
-            var updatedTicket = await _ticketService.UpdateTicket(id, ticket);
-
-            if (updatedTicket == null)
+            try
             {
-                return NotFound($"Ticket with ID {id} not found.");
+                var updatedTicket = await _ticketService.UpdateTicket(id, ticket);
+
+                if (updatedTicket == null)
+                {
+                    return NotFound($"Ticket with ID {id} not found.");
+                }
+                return Ok(updatedTicket);
             }
-            return Ok(updatedTicket);
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            
         }
 
         [HttpDelete("{id}")]
