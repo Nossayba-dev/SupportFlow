@@ -16,6 +16,8 @@ builder.Services.AddControllers()
     });
 
 builder.Services.AddScoped<ITicketService, TicketService>();
+builder.Services.AddScoped<IUserService, UserService>();
+
 
 builder.Services.AddEndpointsApiExplorer();
 
