@@ -64,7 +64,7 @@ namespace SupportFlow.Services
             {
                 Name = user.Name,
                 Email = user.Email,
-                Password = user.Password
+                Password = BCrypt.Net.BCrypt.HashPassword(user.Password)
             };
             _context.Users.Add(newUser);
             await _context.SaveChangesAsync();
@@ -88,7 +88,7 @@ namespace SupportFlow.Services
             }
             existingUser.Name = user.Name;
             existingUser.Email = user.Email;
-            existingUser.Password = user.Password;
+            existingUser.Password = BCrypt.Net.BCrypt.HashPassword(user.Password);
             await _context.SaveChangesAsync();
 
             var ticketDtos = new List<TicketSumaryDto>();
