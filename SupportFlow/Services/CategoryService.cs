@@ -52,6 +52,11 @@ namespace SupportFlow.Services
         }
         public async Task<CategoryResponseDto> AddCategory(CategoryDto category)
         {
+            var existingCategory = await _context.Categories.FirstOrDefaultAsync(c => c.Name == category.Name);
+            if (existingCategory != null)
+            {
+                throw new ArgumentException("Category with the same name already exists.");
+            }
             var newCategory = new Category
             {
                 Name = category.Name
@@ -69,6 +74,11 @@ namespace SupportFlow.Services
         {
             var existingCategory = await _context.Categories.Include(c =>c.Tickets).FirstOrDefaultAsync(c => c.Id ==id);
             if (existingCategory == null) return null;
+            var duplicateCategory = await _context.Categories.FirstOrDefaultAsync(c => c.Name == category.Name && c.Id != id);
+            if (duplicateCategory != null)
+            {
+                throw new ArgumentException("Category with the same name already exists.");
+            }
             existingCategory.Name = category.Name;
             await _context.SaveChangesAsync();
             var ticketDtos = new List<TicketSumaryDto>();

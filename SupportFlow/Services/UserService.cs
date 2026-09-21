@@ -55,6 +55,11 @@ namespace SupportFlow.Services
         }
         public async Task<UserResponseDto> AddUser(UserDto user)
         {
+            var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == user.Email);
+            if (existingUser != null)
+            {
+                throw new ArgumentException("User with this email already exists.");
+            }
             var newUser = new User
             {
                 Name = user.Name,
@@ -74,8 +79,13 @@ namespace SupportFlow.Services
         }
         public async Task<UserResponseDto?> UpdateUser(int id, UserDto user)
         {
-            var existingUser = await _context.Users.Include(u => u.Tickets).FirstOrDefaultAsync(u => u.Id == id);
+            var existingUser = await _context.Users.Include(u => u.Tickets ).FirstOrDefaultAsync(u => u.Id == id);
+
             if (existingUser == null) return null;
+            var duplicateUser = await _context.Users.FirstOrDefaultAsync(u => u.Email == user.Email && u.Id != id); if (duplicateUser != null)
+            {
+                throw new ArgumentException("User with this email already exists.");
+            }
             existingUser.Name = user.Name;
             existingUser.Email = user.Email;
             existingUser.Password = user.Password;
