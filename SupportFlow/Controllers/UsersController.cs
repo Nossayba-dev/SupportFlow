@@ -26,7 +26,7 @@ namespace SupportFlow.Controllers
             return Ok(user);
         }
         [HttpPost]
-        public async Task<IActionResult> AddUser([FromBody] CreateUserDto user)
+        public async Task<IActionResult> AddUser([FromBody] UserDto user)
         {
             try
             {
@@ -39,7 +39,7 @@ namespace SupportFlow.Controllers
             }
         }
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateUser(int id, [FromBody] UpdateUserDto user)
+        public async Task<IActionResult> UpdateUser(int id, [FromBody] UserDto user)
         {
             try
             {

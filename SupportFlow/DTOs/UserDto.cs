@@ -1,6 +1,6 @@
 ﻿namespace SupportFlow.DTOs
 {
-    public class UpdateUserDto
+    public class UserDto
     {
         public string Name { get; set; }
         public string Email { get; set; }

@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SupportFlow.Data;
 using SupportFlow.DTOs;
-using SupportFlow.Enums;
 using SupportFlow.Models;
 
 namespace SupportFlow.Services
@@ -54,7 +53,7 @@ namespace SupportFlow.Services
             };
             return dto;
         }
-        public async Task<UserResponseDto> AddUser(CreateUserDto user)
+        public async Task<UserResponseDto> AddUser(UserDto user)
         {
             var newUser = new User
             {
@@ -73,7 +72,7 @@ namespace SupportFlow.Services
             };
             return dto;
         }
-        public async Task<UserResponseDto?> UpdateUser(int id, UpdateUserDto user)
+        public async Task<UserResponseDto?> UpdateUser(int id, UserDto user)
         {
             var existingUser = await _context.Users.Include(u => u.Tickets).FirstOrDefaultAsync(u => u.Id == id);
             if (existingUser == null) return null;
