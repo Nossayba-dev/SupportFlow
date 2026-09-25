@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using SupportFlow.DTOs;
 using SupportFlow.Services;
+
 
 namespace SupportFlow.Controllers
 {
@@ -14,11 +16,13 @@ namespace SupportFlow.Controllers
             _categoryService = categoryService;
         }
         [HttpGet]
+        [Authorize]
         public async Task<IActionResult> GetCategories()
         {
             return Ok(await _categoryService.GetCategories());
         }
         [HttpGet("{id}")]
+        [Authorize]
         public async Task<IActionResult> GetCategoryById(int id)
         {
             var category = await _categoryService.GetCategoryById(id);
@@ -26,6 +30,7 @@ namespace SupportFlow.Controllers
             return Ok(category);
         }
         [HttpPost]
+        [Authorize (Roles="Admin")]
         public async Task<IActionResult> AddCategory([FromBody] CategoryDto category)
         {
             try
@@ -39,6 +44,7 @@ namespace SupportFlow.Controllers
             }
         }
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateCategory(int id, [FromBody] CategoryDto category)
         {
             try
@@ -56,6 +62,7 @@ namespace SupportFlow.Controllers
             }
         }
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteCategory(int id)
         {
             var result = await _categoryService.DeleteCategory(id);

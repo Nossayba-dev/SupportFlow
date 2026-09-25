@@ -14,19 +14,21 @@ namespace SupportFlow.Services
         {
             _context = context;
         }
-        public async Task<List<TicketResponseDto>> GetTickets() 
+        public async Task<List<TicketResponseDto>> GetTickets(int currentUserId, UserRole currentUserRole) 
         {
             var tickets = await _context.Tickets.Include(t => t.User).Include(t => t.Category).ToListAsync();
 
             var result = new List<TicketResponseDto>();
+            
             foreach (var t in tickets){
                 var userDto = new UserSummaryDto
                 {
                     Id = t.User.Id,
                     Name = t.User.Name,
+                    Role = t.User.Role,
                     Email = t.User.Email
                 };
-
+                
                 var categoryDto = new CategorySummaryDto
                 {
                     Id = t.Category.Id,
@@ -43,21 +45,28 @@ namespace SupportFlow.Services
                     Priority = t.Priority,
                     Comments = t.Comments
                 };
-
-                result.Add(dto);
+                
+                
+                    result.Add(dto);
+                                
+            }
+            if (currentUserRole == UserRole.Customer)
+            {
+                return result.Where(r => r.User.Id == currentUserId).ToList();
             }
 
             return result;
         }
-        public async Task<TicketResponseDto?> GetTicketById(int id)
+        public async Task<TicketResponseDto?> GetTicketById(int id, int currentUserId, UserRole currentUserRole)
         {
             var t = await _context.Tickets.Include(t => t.User).Include(t => t.Category).FirstOrDefaultAsync(t => t.Id == id);
             if (t == null) return null;
-
+                
             var userDto = new UserSummaryDto
             {
                 Id = t.User.Id,
                 Name = t.User.Name,
+                Role = t.User.Role,
                 Email = t.User.Email
             };
 
@@ -66,7 +75,10 @@ namespace SupportFlow.Services
                 Id = t.Category.Id,
                 Name = t.Category.Name
             };
-
+            if (currentUserRole == UserRole.Customer && t.User.Id != currentUserId)
+            {
+                throw new UnauthorizedAccessException("You do not have permission to access this ticket.") ;
+            }
             return new TicketResponseDto
             {
                 Id = t.Id,
@@ -79,9 +91,9 @@ namespace SupportFlow.Services
             };
         }
 
-        public async Task<TicketResponseDto> AddTicket(CreateTicketDto dto)
+        public async Task<TicketResponseDto> AddTicket(CreateTicketDto dto, int currentUserId)
         {
-            var user = await _context.Users.FindAsync(dto.UserId);
+            var user = await _context.Users.FindAsync(currentUserId);
             var category = await _context.Categories.FindAsync(dto.CategoryId);
             if (user == null || category == null)
             {
@@ -114,17 +126,18 @@ namespace SupportFlow.Services
                 Comments = ticket.Comments
             };
         }
-
-
-        public async Task<TicketResponseDto?> UpdateTicket(int id, UpdateTicketDto dto)
+        public async Task<TicketResponseDto?> UpdateTicket(int id, UpdateTicketDto dto, int currentUserId, UserRole currentUserRole)
         {
-            var existingTicket = await _context.Tickets.FindAsync(id);
+            var existingTicket = await _context.Tickets.Include(t => t.User).FirstOrDefaultAsync(t => t.Id == id);
 
             if (existingTicket == null)
             {
                 return null;
             }
-
+            if (currentUserRole == UserRole.Customer && existingTicket.User.Id != currentUserId)
+            {
+                throw new UnauthorizedAccessException("You do not have permission to access this ticket.");
+            }
             var user = await _context.Users.FindAsync(dto.UserId);
             var category = await _context.Categories.FindAsync(dto.CategoryId);
             if (user == null || category == null)
@@ -144,7 +157,7 @@ namespace SupportFlow.Services
 
             var userDto = new UserSummaryDto { Id = existingTicket.User.Id, Name = existingTicket.User.Name, Email = existingTicket.User.Email };
             var categoryDto = new CategorySummaryDto { Id = existingTicket.Category.Id, Name = existingTicket.Category.Name };
-
+            
             return new TicketResponseDto
             {
                 Id = existingTicket.Id,
@@ -156,17 +169,17 @@ namespace SupportFlow.Services
                 Comments = existingTicket.Comments
             };
         }
-        public async Task<bool> DeleteTicket(int id)
+        public async Task<bool> DeleteTicket(int id, int currentUserId, UserRole currentUserRole)
         {
-            var ticket = await _context.Tickets.FindAsync(id);
-
-
+            var ticket = await _context.Tickets.Include(t => t.User).FirstOrDefaultAsync(t => t.Id == id);
             if (ticket == null)
             {
                 return false;
             }
-
-
+            if (currentUserRole == UserRole.Customer && ticket.User.Id != currentUserId)
+            {
+                throw new UnauthorizedAccessException("You do not have permission to access this ticket.");
+            }
             _context.Tickets.Remove(ticket);
             await _context.SaveChangesAsync();
 

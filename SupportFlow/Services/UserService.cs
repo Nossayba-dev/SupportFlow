@@ -1,7 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SupportFlow.Data;
 using SupportFlow.DTOs;
+using SupportFlow.Enums;
 using SupportFlow.Models;
+using System.Data;
+
 
 namespace SupportFlow.Services
 {
@@ -28,6 +31,7 @@ namespace SupportFlow.Services
                 {
                     Id = u.Id,
                     Name = u.Name,
+                    Role = u.Role,
                     Email = u.Email,
                     Tickets = ticketDtos
                 };
@@ -48,6 +52,7 @@ namespace SupportFlow.Services
             {
                 Id = u.Id,
                 Name = u.Name,
+                Role = u.Role,
                 Email = u.Email,
                 Tickets = ticketDtos
             };
@@ -63,6 +68,7 @@ namespace SupportFlow.Services
             var newUser = new User
             {
                 Name = user.Name,
+                Role = UserRole.Customer,
                 Email = user.Email,
                 Password = BCrypt.Net.BCrypt.HashPassword(user.Password)
             };
@@ -72,6 +78,7 @@ namespace SupportFlow.Services
             {
                 Id = newUser.Id,
                 Name = newUser.Name,
+                Role = newUser.Role,
                 Email = newUser.Email,
                 Tickets = new List<TicketSumaryDto>()
             };
@@ -101,6 +108,7 @@ namespace SupportFlow.Services
             {
                 Id = existingUser.Id,
                 Name = existingUser.Name,
+                Role = existingUser.Role,
                 Email = existingUser.Email,
                 Tickets = ticketDtos
             };

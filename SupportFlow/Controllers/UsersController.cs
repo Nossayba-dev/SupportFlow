@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using SupportFlow.DTOs;
 using SupportFlow.Services;
+using System.Security.Claims;
 
 namespace SupportFlow.Controllers
 {
@@ -14,6 +16,7 @@ namespace SupportFlow.Controllers
             _userService = userService;
         }
         [HttpGet]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> GetUsers()
         {
             return Ok(await _userService.GetUsers());
@@ -41,6 +44,11 @@ namespace SupportFlow.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateUser(int id, [FromBody] UserDto user)
         {
+            var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (currentUserId != id.ToString())
+            {
+                return Forbid();
+            }
             try
             {
                 var updatedUser = await _userService.UpdateUser(id, user);
@@ -56,6 +64,7 @@ namespace SupportFlow.Controllers
             }
         }
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteUser(int id)
         {
             var deleted = await _userService.DeleteUser(id);
