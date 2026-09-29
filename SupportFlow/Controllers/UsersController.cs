@@ -45,7 +45,8 @@ namespace SupportFlow.Controllers
         public async Task<IActionResult> UpdateUser(int id, [FromBody] UserDto user)
         {
             var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (currentUserId != id.ToString())
+            var currentUserRole = User.FindFirstValue(ClaimTypes.Role);
+            if (currentUserId != id.ToString()&&( currentUserRole== "Customer"|| currentUserRole == "Agent"))
             {
                 return Forbid();
             }

@@ -9,7 +9,6 @@ namespace SupportFlow.Services
         public Task<UserResponseDto> AddUser(UserDto user);
         public Task<UserResponseDto?> UpdateUser(int id, UserDto user);
         public Task<UserResponseDto?> UpdateUserRole(int id, UpdateUserRoleDto user);
-
         public Task<bool> DeleteUser(int id);
     }
 }
