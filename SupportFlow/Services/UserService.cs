@@ -114,6 +114,24 @@ namespace SupportFlow.Services
             };
             return dto;
         }
+        public async Task<UserResponseDto?> UpdateUserRole(int id, UpdateUserRoleDto user)
+        {
+            var existingUser = await _context.Users.Include(u => u.Tickets).FirstOrDefaultAsync(u => u.Id == id); // find by id, same as UpdateUser
+            if (existingUser == null) return null;
+
+            existingUser.Role = user.Role;
+
+            await _context.SaveChangesAsync(); // save
+
+            return new UserResponseDto
+            {
+                Id = existingUser.Id,
+                Name = existingUser.Name,
+                Email = existingUser.Email,
+                Role = existingUser.Role,
+                Tickets = new List<TicketSumaryDto>()
+            };
+        }
         public async Task<bool> DeleteUser(int id)
         {
             var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);

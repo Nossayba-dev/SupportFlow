@@ -63,6 +63,25 @@ namespace SupportFlow.Controllers
                 return BadRequest(ex.Message);
             }
         }
+        [HttpPut("{id}/role")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UpdateUserRole(int id, [FromBody] UpdateUserRoleDto user)
+        {
+            
+            try
+            {
+                var updatedUserRole = await _userService.UpdateUserRole(id, user);
+                if (updatedUserRole == null)
+                {
+                    return NotFound($"User with ID {id} not found.");
+                }
+                return Ok(updatedUserRole);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteUser(int id)
