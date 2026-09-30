@@ -13,7 +13,7 @@ namespace SupportFlow.Services
         {
             _context = context;
         }
-        public async Task<List<TicketResponseDto>> GetTickets(int currentUserId, UserRole currentUserRole) 
+        public async Task<List<TicketResponseDto>> GetTickets(int currentUserId, UserRole currentUserRole, int page = 1, int pageSize = 10, TicketStatus? status = null, bool sortByPriority = false) 
         {
             var tickets = await _context.Tickets.Include(t => t.User).Include(t => t.Category).ToListAsync();
 
@@ -44,17 +44,27 @@ namespace SupportFlow.Services
                     Priority = t.Priority,
                     Comments = t.Comments
                 };
-                
+
                 
                     result.Add(dto);
                                 
             }
             if (currentUserRole == UserRole.Customer)
             {
-                return result.Where(r => r.User.Id == currentUserId).ToList();
+                result = result.Where(r => r.User.Id == currentUserId).ToList();
             }
 
-            return result;
+            if (status != null)
+            {
+                result = result.Where(r => r.Status == status).ToList();
+            }
+
+            if (sortByPriority == true) 
+            {
+                result = result.OrderBy(r => r.Priority).ToList();
+            }
+
+            return result.Skip((page - 1) * pageSize).Take(pageSize).ToList();
         }
         public async Task<TicketResponseDto?> GetTicketById(int id, int currentUserId, UserRole currentUserRole)
         {

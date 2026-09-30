@@ -19,11 +19,13 @@ namespace SupportFlow.Controllers
             _ticketService = ticketService;
         }
         [HttpGet] 
-        public async Task<IActionResult> GetTickets()
+        public async Task<IActionResult> GetTickets(int page = 1, int pageSize = 10, TicketStatus? status = null, bool sortByPriority = false)
         {
             var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             var currentUserRole = Enum.Parse<UserRole>(User.FindFirstValue(ClaimTypes.Role));
-            return Ok(await _ticketService.GetTickets( currentUserId, currentUserRole));
+
+            
+            return Ok(await _ticketService.GetTickets( currentUserId, currentUserRole, page, pageSize, status, sortByPriority));
         }
         [HttpGet("{id}")]
         public async Task<IActionResult> GetTicketById(int id)

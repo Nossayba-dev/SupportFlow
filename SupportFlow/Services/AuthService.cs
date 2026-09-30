@@ -13,19 +13,22 @@ namespace SupportFlow.Services
     {
         private readonly SupportFlowDbContext _context;
         private readonly IConfiguration _configuration;
+        private readonly ILogger<AuthService> _logger;
 
-        public AuthService(SupportFlowDbContext context, IConfiguration configuration)
+        public AuthService(SupportFlowDbContext context, IConfiguration configuration, ILogger<AuthService> logger)
         {
             _context = context;
             _configuration = configuration;
+            _logger = logger;
         }
 
         public async Task<string?> Login(LoginDto login)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == login.Email);
-            
+
             if (user == null || !BCrypt.Net.BCrypt.Verify(login.Password, user.Password))
             {
+                _logger.LogWarning("Failed login attempt for email: {Email}", login.Email);
                 return null;
             }
             var claims = new List<Claim>
@@ -47,7 +50,8 @@ namespace SupportFlow.Services
                 signingCredentials: creds
             );
 
-            return new JwtSecurityTokenHandler().WriteToken(token);
+            _logger.LogInformation("User {Email} logged in successfully.", user.Email);
+            return new JwtSecurityTokenHandler().WriteToken(token);           
         }
 
     }
