@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.OpenApi;
-
+  
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -79,5 +79,9 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
-
+public partial class Program
+{
+    // This class is intentionally left empty.
+    // It serves as an entry point for the application and allows for integration testing.
+}
 
