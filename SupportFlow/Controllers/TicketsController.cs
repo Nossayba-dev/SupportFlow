@@ -18,23 +18,35 @@ namespace SupportFlow.Controllers
         {
             _ticketService = ticketService;
         }
+
+        private bool TryGetCurrentUser(out int userId, out UserRole role)
+        {
+            userId = 0;
+            role = default;
+
+            var idClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var roleClaim = User.FindFirst(ClaimTypes.Role)?.Value;
+
+            return int.TryParse(idClaim, out userId)
+                && Enum.TryParse(roleClaim, out role);
+        }
         [HttpGet] 
         public async Task<IActionResult> GetTickets(int page = 1, int pageSize = 10, TicketStatus? status = null, bool sortByPriority = false)
         {
-            var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            var currentUserRole = Enum.Parse<UserRole>(User.FindFirstValue(ClaimTypes.Role));
+            if (!TryGetCurrentUser(out var userId, out var role))
+                return Unauthorized();
 
-            
-            return Ok(await _ticketService.GetTickets( currentUserId, currentUserRole, page, pageSize, status, sortByPriority));
+
+            return Ok(await _ticketService.GetTickets( userId, role, page, pageSize, status, sortByPriority));
         }
         [HttpGet("{id}")]
         public async Task<IActionResult> GetTicketById(int id)
         {
-            var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            var currentUserRole = Enum.Parse<UserRole>(User.FindFirstValue(ClaimTypes.Role));
+            if (!TryGetCurrentUser(out var userId, out var role))
+                return Unauthorized();
             try
             {
-                var ticket = await _ticketService.GetTicketById(id, currentUserId, currentUserRole);
+                var ticket = await _ticketService.GetTicketById(id, userId, role);
                 if (ticket == null) return NotFound();
                 return Ok(ticket);
             }
@@ -46,10 +58,11 @@ namespace SupportFlow.Controllers
         [HttpPost]
         public async Task<IActionResult> AddTicket([FromBody] CreateTicketDto ticket)
         {
-            var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            if (!TryGetCurrentUser(out var userId, out var role))
+                return Unauthorized();
             try
             {
-                var createdTicket = await _ticketService.AddTicket(ticket, currentUserId);
+                var createdTicket = await _ticketService.AddTicket(ticket, userId);
                 return CreatedAtAction(nameof(GetTicketById), new { id = createdTicket.Id }, createdTicket);
             }
             catch (ArgumentException ex)
@@ -61,11 +74,11 @@ namespace SupportFlow.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateTicket(int id, [FromBody] UpdateTicketDto ticket)
         {
-            var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            var currentUserRole = Enum.Parse<UserRole>(User.FindFirstValue(ClaimTypes.Role));
+            if (!TryGetCurrentUser(out var userId, out var role))
+                return Unauthorized();
             try
             {
-                var updatedTicket = await _ticketService.UpdateTicket(id, ticket, currentUserId, currentUserRole);
+                var updatedTicket = await _ticketService.UpdateTicket(id, ticket, userId, role);
 
                 if (updatedTicket == null)
                 {
@@ -87,11 +100,11 @@ namespace SupportFlow.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTicket(int id)
         {
-            var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            var currentUserRole = Enum.Parse<UserRole>(User.FindFirstValue(ClaimTypes.Role));
+            if (!TryGetCurrentUser(out var userId, out var role))
+                return Unauthorized();
             try
             {
-                var deleted = await _ticketService.DeleteTicket(id, currentUserId, currentUserRole);
+                var deleted = await _ticketService.DeleteTicket(id, userId, role);
                 if (!deleted)
                 {
                 return NotFound($"Ticket with ID {id} not found.");
