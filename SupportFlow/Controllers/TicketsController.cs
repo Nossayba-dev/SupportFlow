@@ -38,7 +38,7 @@ namespace SupportFlow.Controllers
                 if (ticket == null) return NotFound();
                 return Ok(ticket);
             }
-            catch (UnauthorizedAccessException ex)
+            catch (UnauthorizedAccessException )
             {
                 return Forbid();
             }
@@ -77,7 +77,7 @@ namespace SupportFlow.Controllers
             {
                 return BadRequest(ex.Message);
             }
-            catch (UnauthorizedAccessException ex)
+            catch (UnauthorizedAccessException )
             {
                 return Forbid();
             }
@@ -99,7 +99,7 @@ namespace SupportFlow.Controllers
                 return NoContent();
 
             }
-            catch (UnauthorizedAccessException ex)
+            catch (UnauthorizedAccessException )
             {
                 return Forbid();
             }
